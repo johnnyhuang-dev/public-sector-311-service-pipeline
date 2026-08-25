@@ -13,7 +13,7 @@ storage_options = {
 
 def transform():
     source_uri = 'az://bronze/urban_service_requests.csv'
-    target_uri = 'az://bronze/urban_service_requests.parquet'
+    target_uri = 'az://silver/urban_service_requests.parquet'
 
     df = pl.scan_csv(source_uri, storage_options=storage_options)
 
@@ -30,11 +30,11 @@ def transform():
         "Longitude": "longitude"
     }
 
-    df_filtered = df.select([
+    df_new_columns = df.select([
         pl.col(old).alias(new) for old, new in column_mapping.items()
     ])
 
-    df_filtered.sink_parquet(
+    df_new_columns.sink_parquet(
         target_uri,
         storage_options=storage_options,
         compression='snappy'
@@ -43,3 +43,5 @@ def transform():
     print(f"data loaded to {target_uri}")
 
     return None
+
+transform()

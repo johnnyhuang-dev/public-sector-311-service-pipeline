@@ -47,3 +47,5 @@ def upload_data():
         print(e)
 
     return None
+
+upload_data()

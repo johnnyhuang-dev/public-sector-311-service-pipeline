@@ -5,9 +5,11 @@ from pathlib import Path
 
 load_dotenv()
 
+# Location of the 'include' folder in astro airflow that contains this .py file
 location = Path(__file__).resolve().parent
 
-project_root = location
+# Location of the project's parent folder
+project_root = location.parent
 
 ACCOUNT_KEY=os.getenv("ACCOUNT_KEY")
 ACCOUNT_NAME = "311servicestorage"

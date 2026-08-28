@@ -3,3 +3,4 @@ data
 .env
 .astro
 airflow_settings.yaml
+credentials.sh

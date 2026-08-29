@@ -1,0 +1,11 @@
+version: '3.1'
+services:
+  webserver:
+    volumes:
+      - ~/.azure:/home/airflow/.azure:rw
+  scheduler:
+    volumes:
+      - ~/.azure:/home/airflow/.azure:rw
+  triggerer:
+    volumes:
+      - ~/.azure:/home/airflow/.azure:rw

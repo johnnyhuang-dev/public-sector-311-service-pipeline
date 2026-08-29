@@ -18,7 +18,7 @@ default_args = {
     'schedule_interval': '@hourly',
     'resource_group_name': 'service_requests',
     'factory_name': '311-service-factory',
-    'azure_data_factory_conn_id': 'azure_factory'
+    'azure_data_factory_conn_id': 'azure_data_factory'
 }
 
 @task()

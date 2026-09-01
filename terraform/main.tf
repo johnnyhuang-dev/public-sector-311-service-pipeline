@@ -38,14 +38,14 @@ resource "azurerm_storage_container" "bronze" {
   name                  = "bronze"
   storage_account_id    = azurerm_storage_account.service311storage.id
   container_access_type = "private"
-  depends_on = [ azurerm_storage_account.service311storage ]
+  depends_on            = [azurerm_storage_account.service311storage]
 }
 
 resource "azurerm_storage_container" "silver" {
   name                  = "silver"
   storage_account_id    = azurerm_storage_account.service311storage.id
   container_access_type = "private"
-  depends_on = [ azurerm_storage_account.service311storage ]
+  depends_on            = [azurerm_storage_account.service311storage]
 }
 
 
@@ -53,17 +53,18 @@ resource "azurerm_storage_container" "silver" {
 resource "azurerm_postgresql_flexible_server" "service311server" {
   name                          = "service311server"
   resource_group_name           = azurerm_resource_group.service_requests.name
-  location                      = "East US"
+  location                      = "Canada Central"
   version                       = "16"
-  administrator_login           = "adminadmin"
-  administrator_password        = "H@Sh1CoR3!"
+  administrator_login           = var.user
+  administrator_password        = var.pg_pass
   zone                          = "1"
   public_network_access_enabled = true
 
   storage_mb   = 32768
-  storage_tier = "P30"
 
-  sku_name   = "GP_Standard_D4s_v3"
+  sku_name    = "GP_Standard_D4s_v3"
+  create_mode = "Default"
+
   depends_on = [azurerm_resource_group.service_requests]
 
 }
@@ -76,35 +77,37 @@ resource "azurerm_postgresql_flexible_server_database" "service_311_db" {
 
   # prevent the possibility of accidental data loss
   lifecycle {
-    prevent_destroy = true
+    prevent_destroy = false
   }
 }
 
-# Data Factory
-resource "azurerm_data_factory" "service_311_data_factory" {
-  name                = "service_311_data_factory"
-  location            = "East Us"
+# Data Factory with linked services (blob storage and parquet dataset)
+data "azurerm_storage_account" "service311storage" {
+  name                = "service311storage"
   resource_group_name = azurerm_resource_group.service_requests.name
 }
 
-resource "azurerm_data_factory_pipeline" "service_311_df_pipeline" {
-  name            = "service_311_df_pipeline"
-  data_factory_id = azurerm_data_factory.service_311_data_factory.id
-  variables = {
-    "bob" = "item1"
+resource "azurerm_data_factory" "service311factory" {
+  name                = "service311factory"
+  location            = "East US"
+  resource_group_name = azurerm_resource_group.service_requests.name
+}
+
+resource "azurerm_data_factory_linked_service_azure_blob_storage" "blob_storage_ls" {
+  name              = "blob_storage_ls"
+  data_factory_id   = azurerm_data_factory.service311factory.id
+  connection_string = data.azurerm_storage_account.service311storage.primary_connection_string
+}
+
+resource "azurerm_data_factory_dataset_parquet" "service_311_dataset" {
+  name                = "service_311_dataset"
+  data_factory_id     = azurerm_data_factory.service311factory.id
+  linked_service_name = azurerm_data_factory_linked_service_azure_blob_storage.blob_storage_ls.name
+
+  compression_codec = "snappy"
+
+  azure_blob_storage_location {
+    container = "silver"
+    filename = "urban_service_requests.parquet"
   }
-  activities_json = <<JSON
-[
-    {
-        "name": "Append variable1",
-        "type": "AppendVariable",
-        "dependsOn": [],
-        "userProperties": [],
-        "typeProperties": {
-          "variableName": "bob",
-          "value": "something"
-        }
-    }
-]
-  JSON
 }

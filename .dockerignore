@@ -3,6 +3,16 @@ astro
 .env
 airflow_settings.yaml
 logs/
-.venv
+environ
 airflow.db
 airflow.cfg
+credentials.sh
+docker-compose.override.yaml
+tests
+.terraform
+*.hcl
+credentials.txt
+*.tfstate
+*.backup
+*.tfvars
+__pycache__

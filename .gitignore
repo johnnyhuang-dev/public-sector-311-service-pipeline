@@ -4,3 +4,12 @@ data
 .astro
 airflow_settings.yaml
 credentials.sh
+docker-compose.override.yaml
+tests
+.terraform
+*.hcl
+credentials.txt
+*.tfstate
+*.backup
+*.tfvars
+__pycache__

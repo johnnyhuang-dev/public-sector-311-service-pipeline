@@ -85,6 +85,8 @@ resource "azurerm_postgresql_flexible_server_database" "service_311_db" {
 data "azurerm_storage_account" "service311storage" {
   name                = "service311storage"
   resource_group_name = azurerm_resource_group.service_requests.name
+
+  depends_on = [ azurerm_storage_account.service311storage ]
 }
 
 resource "azurerm_data_factory" "service311factory" {
@@ -110,4 +112,78 @@ resource "azurerm_data_factory_dataset_parquet" "service_311_dataset" {
     container = "silver"
     filename = "urban_service_requests.parquet"
   }
+}
+
+# PostgreSQL Linked Service for data factory
+resource "azurerm_data_factory_linked_custom_service" "linkedservicepostgresql" {
+  name              = "linkedservicepostgresql"
+  data_factory_id   = azurerm_data_factory.service311factory.id
+  type            = "PostgreSqlV2"
+
+  type_properties_json = jsonencode({
+    server         = azurerm_postgresql_flexible_server.service311server.fqdn
+    port           = 5432
+    database       = azurerm_postgresql_flexible_server_database.service_311_db.name
+    username       = var.user
+    sslMode        = 2 # corresponds to Require / SSL enabled
+    trustServerCertificate = true
+    password = {
+      type  = "SecureString"
+      value = var.pg_pass
+    }
+  })
+}
+
+# PostgreSQL output dataset in data factory 
+resource "azurerm_data_factory_custom_dataset" "postgresql_dataset" {
+    name                = "postgresql_dataset"
+    data_factory_id     = azurerm_data_factory.service311factory.id
+    type                = "PostgreSqlV2Table"
+    linked_service {
+        name = azurerm_data_factory_linked_custom_service.linkedservicepostgresql.name
+    }
+
+    type_properties_json = jsonencode({
+        table  = "urban_city_requests"
+        schema = "gold"
+    })
+}
+
+# Data factory Copy Pipeline
+resource "azurerm_data_factory_pipeline" "silver_to_gold_pipeline" {
+  name            = "silver_to_gold_pipeline"
+  data_factory_id = azurerm_data_factory.service311factory.id
+
+  activities_json = jsonencode([
+    {
+      name = "Silver_Parquet_To_Gold_Postgres"
+      type = "Copy"
+      typeProperties = {
+        source = {
+          type = "ParquetSource"
+          storeSettings = {
+            type      = "AzureBlobStorageReadSettings"
+            recursive = true
+          }
+        }
+        sink = {
+          type           = "AzurePostgreSQLSink"
+          writeBatchSize = 10000
+          preCopyScript  = "TRUNCATE TABLE gold.urban_city_requests;"
+        }
+      }
+      inputs = [
+        {
+          referenceName = azurerm_data_factory_dataset_parquet.service_311_dataset.name
+          type          = "DatasetReference"
+        }
+      ]
+      outputs = [
+        {
+          referenceName = azurerm_data_factory_custom_dataset.postgresql_dataset.name
+          type          = "DatasetReference"
+        }
+      ]
+    }
+  ])
 }

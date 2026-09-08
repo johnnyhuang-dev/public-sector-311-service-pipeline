@@ -17,7 +17,7 @@ default_args = {
     'retry_delay': timedelta(minutes=1),
     'schedule_interval': '@hourly',
     'resource_group_name': 'service_requests',
-    'factory_name': '311-service-factory',
+    'factory_name': 'service311factory',
     'azure_data_factory_conn_id': 'azure_data_factory'
 }
 
@@ -45,7 +45,7 @@ with DAG(dag_id='urban_city_requests',
 
     data_factory = AzureDataFactoryRunPipelineOperator(
         task_id='run_data_factory',
-        pipeline_name='311ServiceDataFactoryPipeline'
+        pipeline_name='silver_to_gold_pipeline'
     )
     
     extract_api_data() >> transform_data() >> create_db_table >> data_factory

@@ -12,7 +12,7 @@ location = Path(__file__).resolve().parent
 project_root = location.parent
 
 ACCOUNT_KEY=os.getenv("ACCOUNT_KEY")
-ACCOUNT_NAME = "311servicestorage"
+ACCOUNT_NAME = "service311storage"
 CONTAINER_NAME = "bronze"
 
 LOCAL_FILE_PATH = project_root / "data" / "urban_service_requests.csv"
@@ -49,5 +49,3 @@ def upload_data():
         print(e)
 
     return None
-
-upload_data()

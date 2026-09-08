@@ -7,8 +7,8 @@ load_dotenv()
 
 # Storage details for the blob
 storage_options = {
-    'account_name': '311servicestorage',
-    'account_key': os.getenv('ACCOUNT_KEY')
+    'account_name': 'service311storage',
+    'account_key': os.getenv('ACCOUNT_KEY'),
 }
 
 def transform():
@@ -43,5 +43,3 @@ def transform():
     print(f"data loaded to {target_uri}")
 
     return None
-
-transform()

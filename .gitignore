@@ -13,3 +13,4 @@ credentials.txt
 *.backup
 *.tfvars
 __pycache__
+*.lock

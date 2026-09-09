@@ -1,45 +1,17 @@
-Overview
-========
+# 311 Service NYC Analytics Pipeline
 
-Welcome to Astronomer! This project was generated after you ran 'astro dev init' using the Astronomer CLI. This readme describes the contents of the project, as well as how to run Apache Airflow on your local machine.
+This repository contains my production-grade prototype on developing a cloud-based data pipeline for easy, fast, and reliable access to the public NYC311 municipal service data. The municipal services in the city can use this to get clean and understandable insights into the citizens' municipal issues (e.g. housing, streets, sidewalks, sanitation, quality of life, etc.). As mentioned before, this repository contains only the beta version of the actual code that will be used by the NYC311 service so as not to publicly disclose confidential company code.
 
-Project Contents
-================
+![Data Pipeline Architecture](img/urban_city_reporting_pipeline.png)
 
-Your Astro project contains the following files and folders:
+## Key Features
 
-- dags: This folder contains the Python files for your Airflow DAGs. By default, this directory includes one example DAG:
-    - `example_astronauts`: This DAG shows a simple ETL pipeline example that queries the list of astronauts currently in space from the Open Notify API and prints a statement for each astronaut. The DAG uses the TaskFlow API to define tasks in Python, and dynamic task mapping to dynamically print a statement for each astronaut. For more on how this DAG works, see our [Getting started tutorial](https://www.astronomer.io/docs/learn/get-started-with-airflow).
-- Dockerfile: This file contains a versioned Astro Runtime Docker image that provides a differentiated Airflow experience. If you want to execute other commands or overrides at runtime, specify them here.
-- include: This folder contains any additional files that you want to include as part of your project. It is empty by default.
-- packages.txt: Install OS-level packages needed for your project by adding them to this file. It is empty by default.
-- requirements.txt: Install Python packages needed for your project by adding them to this file. It is empty by default.
-- plugins: Add custom or community plugins for your project to this file. It is empty by default.
-- airflow_settings.yaml: Use this local-only file to specify Airflow Connections, Variables, and Pools instead of entering them in the Airflow UI as you develop DAGs in this project.
+I implemented an ETL pipeline that takes the raw NYC311 service data from an online API and transforms it using Python. An Azure blob storage account is used to store the raw and transformed versions of the data. Then, an Azure data factory pipeline loads the transformed data into an Azure PostgreSQL flexible server. From then on, the data can be queried for analytics.   
 
-Deploy Your Project Locally
-===========================
+The tech stack includes:
+- Python: used for the extraction and transformation layers of the pipeline, as well as Airflow configuration
+- Azure: cloud storage, data factory pipeline, and PostgreSQL flexible server
+- Airflow (Astro CLI): manages the scheduling, running, and monitoring of the entire pipeline code programmatically
+- Terraform: manages the entire Azure infrastructure programmatically
+- Docker: Astro CLI runs Airflow on local Docker containers
 
-Start Airflow on your local machine by running 'astro dev start'.
-
-This command will spin up five Docker containers on your machine, each for a different Airflow component:
-
-- Postgres: Airflow's Metadata Database
-- Scheduler: The Airflow component responsible for monitoring and triggering tasks
-- DAG Processor: The Airflow component responsible for parsing DAGs
-- API Server: The Airflow component responsible for serving the Airflow UI and API
-- Triggerer: The Airflow component responsible for triggering deferred tasks
-
-When all five containers are ready the command will open the browser to the Airflow UI at http://localhost:8080/. You should also be able to access your Postgres Database at 'localhost:5432/postgres' with username 'postgres' and password 'postgres'.
-
-Note: If you already have either of the above ports allocated, you can either [stop your existing Docker containers or change the port](https://www.astronomer.io/docs/astro/cli/troubleshoot-locally#ports-are-not-available-for-my-local-airflow-webserver).
-
-Deploy Your Project to Astronomer
-=================================
-
-If you have an Astronomer account, pushing code to a Deployment on Astronomer is simple. For deploying instructions, refer to Astronomer documentation: https://www.astronomer.io/docs/astro/deploy-code/
-
-Contact
-=======
-
-The Astronomer CLI is maintained with love by the Astronomer team. To report a bug or suggest a change, reach out to our support.
